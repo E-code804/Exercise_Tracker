@@ -38,7 +38,6 @@ const createLog = async (_id, { description, duration, date }) => {
   if (!userDoc) return null;
 
   const dateStr = date ? new Date(date).toDateString() : new Date().toDateString();
-  console.log(dateStr);
 
   const newLog = await Log.create({
     username: userDoc.username,
@@ -52,8 +51,6 @@ const createLog = async (_id, { description, duration, date }) => {
     ],
     _id,
   });
-
-  console.log(newLog);
 
   return newLog;
 };
@@ -78,7 +75,6 @@ const addLog = async (_id, { description, duration, date }) => {
   };
 
   const updatedLog = await Log.findByIdAndUpdate(_id, update, { new: true });
-  console.log(updatedLog);
 
   if (!updatedLog) return null;
   return updatedLog;
