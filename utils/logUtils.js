@@ -1,12 +1,22 @@
 const Log = require("../models/log");
 const User = require("../models/user");
 
-const createLog = async ({ _id, description, duration, date }) => {
+const getLogs = async (_id) => {
+  const userDoc = await User.findById(_id);
+
+  if (!userDoc) return null;
+
+  const logs = await Log.findById(_id);
+  return logs;
+};
+
+const createLog = async (_id, { description, duration, date }) => {
   const userDoc = await User.findById(_id);
 
   if (!userDoc) return null;
 
   const dateStr = date ? new Date(date).toDateString() : new Date().toDateString();
+  console.log(dateStr);
 
   const newLog = await Log.create({
     username: userDoc.username,
@@ -21,15 +31,18 @@ const createLog = async ({ _id, description, duration, date }) => {
     _id,
   });
 
+  console.log(newLog);
+
   return newLog;
 };
 
-const addLog = async ({ _id, description, duration, date }) => {
+const addLog = async (_id, { description, duration, date }) => {
   const userDoc = await User.findById(_id);
 
   if (!userDoc) return null;
 
   const dateStr = date ? new Date(date).toDateString() : new Date().toDateString();
+  console.log(dateStr);
 
   const update = {
     $push: {
@@ -43,9 +56,10 @@ const addLog = async ({ _id, description, duration, date }) => {
   };
 
   const updatedLog = await Log.findByIdAndUpdate(_id, update, { new: true });
+  console.log(updatedLog);
 
   if (!updatedLog) return null;
   return updatedLog;
 };
 
-module.exports = { createLog, addLog };
+module.exports = { getLogs, createLog, addLog };

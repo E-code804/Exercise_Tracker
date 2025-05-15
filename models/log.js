@@ -12,8 +12,10 @@ const logEntrySchema = new mongoose.Schema({
     min: 0,
   },
   date: {
-    type: Date,
+    type: String,
     required: true,
+    default: () => new Date().toDateString(),
+    set: (v) => new Date(v).toDateString(),
   },
 });
 

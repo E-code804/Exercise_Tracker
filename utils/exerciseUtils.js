@@ -1,7 +1,7 @@
 const Exercise = require("../models/exercise");
 const User = require("../models/user");
 
-const createExercise = async ({ _id, description, duration, date }) => {
+const createExercise = async (_id, { description, duration, date }) => {
   let userDoc = await User.findById(_id);
 
   if (!userDoc) return null;
