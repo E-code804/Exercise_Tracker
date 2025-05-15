@@ -34,7 +34,7 @@ app.get("/api/users", async (req, res) => {
 
 app.post("/api/users", async (req, res) => {
   const { _id, username } = await User.create({ username: req.body.username });
-  return res.status(201).send({ username, _id: newUser._id });
+  return res.status(201).send({ username, _id });
 });
 
 // app.post("/api/users/:_id/exercises", async (req, res) => {
@@ -54,7 +54,7 @@ app.post("/api/users", async (req, res) => {
 //   });
 // });
 
-app.post("/api/users/:_id/exercises", exercisesRouter);
+app.use("/api/users/:_id/exercises", exercisesRouter);
 
 // app.get("/api/users/:_id/logs", async (req, res) => {
 //   const { _id } = req.params;
@@ -86,13 +86,13 @@ app.post("/api/users/:_id/exercises", exercisesRouter);
 //   });
 // });
 
-app.get("/api/users/:_id/logs", logsRouter);
+app.use("/api/users/:_id/logs", logsRouter);
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.sendStatus(500);
-});
+// app.use((err, req, res, next) => {
+//   console.error(err);
+//   res.sendStatus(500);
+// });

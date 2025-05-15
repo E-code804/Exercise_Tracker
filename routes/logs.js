@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const { getLogData } = require("../controllers/logController");
+const { getLogs } = require("../controllers/logController");
 const asyncHandler = require("../middleware/asyncHandler");
 
-router.get("/", asyncHandler(getLogData));
+router.get("/", asyncHandler(getLogs));
 
 module.exports = router;
