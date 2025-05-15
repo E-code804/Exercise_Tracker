@@ -3,7 +3,11 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+require("express-async-errors");
 require("dotenv").config();
+
+const exercisesRouter = require("./routes/exercises");
+const logsRouter = require("./routes/logs");
 
 const User = require("./models/user");
 const Exercise = require("./models/exercise");
@@ -24,98 +28,71 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/users", async (req, res) => {
-  try {
-    const users = await User.find({});
-
-    return res.status(200).send(users);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
-  }
+  const users = await User.find({});
+  return res.status(200).send(users);
 });
 
 app.post("/api/users", async (req, res) => {
-  const { username } = req.body;
-
-  try {
-    const newUser = await User.create({ username });
-
-    return res.status(201).send({ username, _id: newUser._id });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
-  }
+  const { _id, username } = await User.create({ username: req.body.username });
+  return res.status(201).send({ username, _id: newUser._id });
 });
 
-app.post("/api/users/:_id/exercises", async (req, res) => {
-  const { _id } = req.params;
+// app.post("/api/users/:_id/exercises", async (req, res) => {
+//   const { _id: userId } = req.params;
 
-  try {
-    const exerciseDoc = await createExercise(_id, req.body);
-    let logDoc = await Log.findById(_id);
+//   const exerciseDoc = await createExercise(userId, req.body);
+//   (await Log.findById(userId))
+//     ? await addLog(userId, req.body)
+//     : await createLog(userId, req.body);
 
-    if (logDoc) {
-      logDoc = await addLog(_id, req.body);
-    } else {
-      logDoc = await createLog(_id, req.body);
-    }
+//   return res.status(201).send({
+//     _id: userId,
+//     username: exerciseDoc.username,
+//     date: exerciseDoc.date,
+//     duration: exerciseDoc.duration,
+//     description: exerciseDoc.description,
+//   });
+// });
 
-    return res.status(201).send({
-      _id,
-      username: exerciseDoc.username,
-      date: exerciseDoc.date,
-      duration: exerciseDoc.duration,
-      description: exerciseDoc.description,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
-  }
-});
+app.post("/api/users/:_id/exercises", exercisesRouter);
 
-const isDateInRange = (d, start, end) => {
-  const date = new Date(d);
-  const from = new Date(start);
-  const to = new Date(end);
+// app.get("/api/users/:_id/logs", async (req, res) => {
+//   const { _id } = req.params;
+//   const { from, to, limit } = req.query;
 
-  return from <= date && date <= to;
-};
+//   const fromDate = from ? new Date(from) : null;
+//   const toDate = to ? new Date(to) : null;
+//   const maxEntries = limit ? parseInt(limit, 10) : null;
 
-app.get("/api/users/:_id/logs", async (req, res) => {
-  const { _id } = req.params;
-  const { from, to, limit } = req.query;
+//   const logDocs = await getLogs(_id);
+//   let logs = logDocs.log;
 
-  const fromDate = from ? new Date(from) : null;
-  const toDate = to ? new Date(to) : null;
-  const maxEntries = limit ? parseInt(limit, 10) : null;
+//   if (fromDate || toDate) {
+//     logs = logs.filter(
+//       (log) =>
+//         (!fromDate || new Date(log.date) >= fromDate) &&
+//         (!toDate || new Date(log.date) <= toDate)
+//     );
+//   }
+//   if (maxEntries) {
+//     logs = logs.slice(0, maxEntries);
+//   }
 
-  try {
-    const logDocs = await getLogs(_id);
-    let logs = logDocs.log;
+//   return res.json({
+//     _id: logDocs._id,
+//     username: logDocs.username,
+//     count: logs.length,
+//     log: logs,
+//   });
+// });
 
-    if (fromDate || toDate) {
-      logs = logs.filter(
-        (log) =>
-          (!fromDate || new Date(log.date) >= fromDate) &&
-          (!toDate || new Date(log.date) <= toDate)
-      );
-    }
-    if (maxEntries) {
-      logs = logs.slice(0, maxEntries);
-    }
-
-    return res.json({
-      _id: logDocs._id,
-      username: logDocs.username,
-      count: logs.length,
-      log: logs,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
-  }
-});
+app.get("/api/users/:_id/logs", logsRouter);
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.sendStatus(500);
 });
